@@ -1,0 +1,130 @@
+head { background-color: rgb(119, 157, 187);
+
+}
+
+#ANT {
+    margin-top: 20px;
+    margin-left: 20px;
+      position: fixed;     
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100px;       
+      z-index: 1000;   }
+     
+body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      perspective: 1000px;
+
+  background: url("sun.jpg") no-repeat center center fixed;
+  background-size: cover;
+    }
+
+    .box {
+      width: 350px;
+      padding: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
+      transform: rotateY(10deg) rotateX(5deg);
+      transition: transform 0.5s;
+    }
+    .box:hover {
+      transform: rotateY(0deg) rotateX(0deg) scale(1.05);
+    }
+
+    .box h2 {
+      text-align: center;
+      color: #070707;
+      margin-bottom: 20px;
+    }
+
+    .box input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      outline: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.2);
+      color: #050505;
+      font-size: 16px;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+    }
+    .box input::placeholder {
+      color: rgba(3, 3, 3, 0.6);
+    }
+
+#Check {width: 30px; align-items: center;
+}
+#signupTogglePass {width: 30px; align-items: center;
+}
+
+    .show-password {
+      display: flex;
+      color: #070707;
+      font-size: 12px;
+    }
+
+    .box button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(45deg, #00c6ff, #0072ff);
+      color: rgb(3, 3, 3);
+      font-size: 18px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .box button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0, 114, 255, 0.6);
+    }
+
+    .switch {
+      text-align: center;
+      margin-top: 15px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .message {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+      color: yellow;
+    }
+
+    
+  #redirectPopup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    text-align: center;
+    padding-top: 150px;
+  }
+  #redirectPopup .box {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+  }
+  #redirectPopup button {
+    margin: 10px;
+    padding: 8px 15px;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
