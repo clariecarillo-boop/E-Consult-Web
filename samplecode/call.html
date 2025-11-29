@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Consultant Call</title>
+<img src="whitelogo.png" alt="Econsult Logo" id="ANT">
+<style>
+
+    
+body{margin:0; background: url("sun.jpg") no-repeat center center fixed;
+  background-size: cover;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Inter,Arial}
+#ANT {
+    margin-top: 20px;
+    margin-left: 20px;
+      position: fixed;     
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100px;       
+      z-index: 1000;   }
+  .app{width:350px;background:#fff;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,0.1);padding:20px;position:relative;text-align:center}
+#backBtn{position:absolute;top:10px;right:10px;background:#eee;border:0;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:600}
+.avatar{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#6ee7b7,#60a5fa);margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;font-weight:700}
+h2{margin:14px 0 6px 0}
+.status{font-size:14px;color:#64748b;margin-bottom:20px}
+button{padding:12px 20px;border:0;border-radius:10px;cursor:pointer;font-size:15px;font-weight:600}
+#callBtn{background:#0b93f6;color:#fff}
+#hangBtn{background:#e2e8f0;color:#1e293b;display:none}
+.dot{width:12px;height:12px;border-radius:50%;margin:0 auto;margin-bottom:10px}
+.ringing{background:#f59e0b;box-shadow:0 0 8px #f59e0b;animation:pulse 1s infinite}
+.connected{background:#22c55e;box-shadow:0 0 8px #22c55e;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <button id="backBtn">X</button>
+  <div class="avatar">🙂</div>
+  <h2>Consultant</h2>
+  <div class="dot" id="dot"></div>
+  <div class="status" id="status">Press the button to call</div>
+
+  <button id="callBtn">Call</button>
+  <button id="hangBtn">Hang Up</button>
+</div>
+
+<script>
+const callBtn = document.getElementById("callBtn");
+const hangBtn = document.getElementById("hangBtn");
+const status = document.getElementById("status");
+const dot = document.getElementById("dot");
+
+// --- Basic ringtone ---
+let audioCtx, ringInt;
+function ringtone(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  ringInt=setInterval(()=>{
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    o.type='sine';o.frequency.value=620;
+    o.connect(g);g.connect(audioCtx.destination);
+    g.gain.value=0.001;
+    g.gain.linearRampToValueAtTime(0.12,audioCtx.currentTime+0.01);
+    o.frequency.linearRampToValueAtTime(720,audioCtx.currentTime+0.18);
+    g.gain.linearRampToValueAtTime(0.001,audioCtx.currentTime+0.32);
+    o.start();o.stop(audioCtx.currentTime+0.34);
+  },700);
+}
+function stopTone(){ if(ringInt) clearInterval(ringInt); }
+function speak(text){
+  const u=new SpeechSynthesisUtterance(text);
+  speechSynthesis.speak(u);
+}
+
+let ws, localStream;
+
+async function startCall() {
+  status.textContent="Calling...";
+  dot.className="dot ringing";
+  ringtone();
+  callBtn.style.display="none";
+
+  setTimeout(async ()=>{
+    stopTone();
+    dot.className="dot connected";
+    status.textContent="Connected";
+    hangBtn.style.display="inline-block";
+
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    } catch(e){
+      status.textContent="Mic permission denied!";
+      return;
+    }
+
+    ws = new WebSocket("wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview", [
+      "realtime"
+    ]);
+    ws.onopen = ()=>{
+      console.log("Connected to AI");
+      status.textContent="Connected to AI";
+      // After connection, start sending audio
+      sendAudioStream();
+    };
+    ws.onmessage = (msg)=>{
+      const data = JSON.parse(msg.data);
+      if(data.type === "response.output_text"){
+        speak(data.text);
+      }
+    };
+    ws.onclose = ()=>{ status.textContent="Call ended"; };
+  },3000);
+}
+
+async function sendAudioStream(){
+  if(!ws || !localStream) return;
+
+  const mediaRecorder = new MediaRecorder(localStream, {mimeType:"audio/webm"});
+  mediaRecorder.ondataavailable = (event)=>{
+    if(event.data.size > 0 && ws.readyState===WebSocket.OPEN){
+      event.data.arrayBuffer().then(buf=>{
+        ws.send(buf);
+      });
+    }
+  };
+  mediaRecorder.start(250); 
+}
+
+hangBtn.onclick=()=>{
+  stopTone();
+  speechSynthesis.cancel();
+  if(ws) ws.close();
+  if(localStream){
+    localStream.getTracks().forEach(track=>track.stop());
+  }
+  dot.className="dot";
+  status.textContent="Call Ended";
+  hangBtn.style.display="none";
+  callBtn.style.display="inline-block";
+};
+
+callBtn.onclick=startCall;
+
+document.getElementById("backBtn").onclick = () => {
+  const proceed = confirm("Do you like to proceed?");
+  if (proceed) {
+    window.location.href = "consultants.html";
+  }
+};
+</script>
+
+</body>
+</html>
